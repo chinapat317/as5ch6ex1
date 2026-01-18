@@ -1,0 +1,47 @@
+#
+# To deploy:
+#
+# kubectl apply -f scripts/deploy.yaml
+#
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: video-streaming
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: video-streaming
+  template:
+    metadata:
+      labels:
+        app: video-streaming
+    spec:
+      containers: 
+      - name: video-streaming
+        image: as5ch6ex1.azurecr.io/video-streaming:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PORT
+          value: "80"
+        - name: RABBIT
+          value: "amqp://app:app_password_change_me@rabbit:5672"
+        - name: NODE_ENV
+          value: "development"
+        - name: DBHOST
+          value: "mongodb://db:27017"
+        - name: DBNAME
+          value: "video-streaming"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: video-streaming
+spec:
+  selector:
+    app: video-streaming
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
